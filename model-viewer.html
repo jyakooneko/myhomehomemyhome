@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRMモデル表示</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@0.5.0/dist/three-vrm.js"></script>
+</head>
+<body>
+    <h1>VRMモデル表示</h1>
+    <div id="webgl-output" style="width: 100%; height: 500px;"></div>
+
+    <script>
+        // シーンとカメラ、レンダラーを作成
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('webgl-output').appendChild(renderer.domElement);
+
+        // VRMモデルの読み込み
+        const loader = new THREE.GLTFLoader();
+        const vrmUrl = 'https://www.dropbox.com/scl/fi/75d6auyc4l3ukjtuqepee/jyohuku.vrm?rlkey=rh6xnnsnq5yhepxm4lw7nvokz&st=8pqysz4o&dl=1';  // DropboxのVRMファイルURL
+
+        loader.load(vrmUrl, (gltf) => {
+            THREE.VRM.from(gltf).then((vrm) => {
+                scene.add(vrm.scene);
+
+                // カメラの位置を調整
+                camera.position.set(0, 1.5, 3);
+
+                // アニメーションループ
+                function animate() {
+                    requestAnimationFrame(animate);
+                    vrm.update(0.1);
+                    renderer.render(scene, camera);
+                }
+
+                animate();
+            });
+        });
+
+        // レンダリング
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
