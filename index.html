@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>パスワード認証</title>
     <style>
-        /* ここにJSFiddleのCSSコードを貼り付け */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -51,6 +50,10 @@
             var password = document.getElementById("password").value;
             if (password === "test123") {
                 document.getElementById("message").innerText = "認証成功！";
+                // 認証成功時にmodel-viewer.htmlへ遷移
+                setTimeout(function() {
+                    window.location.href = "model-viewer.html";  // model-viewer.htmlに遷移
+                }, 1000);  // 1秒後に遷移（認証メッセージが見える時間を確保）
             } else {
                 document.getElementById("message").innerText = "パスワードが違います。";
             }
@@ -58,4 +61,3 @@
     </script>
 </body>
 </html>
-
