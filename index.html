@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>パスワード認証</title>
+    <style>
+        /* ここにJSFiddleのCSSコードを貼り付け */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: white;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: rgb(65, 65, 65);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #000000;
+        }
+
+        #message {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <input type="password" id="password" placeholder="パスワード入力">
+    <button onclick="checkPassword()">ログイン</button>
+    <p id="message"></p>
+
+    <script>
+        function checkPassword() {
+            var password = document.getElementById("password").value;
+            if (password === "test123") {
+                document.getElementById("message").innerText = "認証成功！";
+            } else {
+                document.getElementById("message").innerText = "パスワードが違います。";
+            }
+        }
+    </script>
+</body>
+</html>
+
