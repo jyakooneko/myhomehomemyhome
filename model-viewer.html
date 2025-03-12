@@ -4,50 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VRMモデル表示</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/loaders/GLTFLoader.js"></script>
-    <!-- 安定版のthree-vrm.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@0.5.0/dist/three-vrm.js"></script>
-</head>
-<body>
-    <h1>VRMモデル表示</h1>
-    <div id="webgl-output" style="width: 100%; height: 500px;"></div>
+    <script type="module">
+        import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150/examples/jsm/loaders/GLTFLoader.js';
+        import { VRM } from 'https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@0.5.6/lib/three-vrm.module.js';
 
-    <script>
         // シーンとカメラ、レンダラーを作成
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('webgl-output').appendChild(renderer.domElement);
+        document.body.appendChild(renderer.domElement);
 
-        // VRMモデルの読み込み
-        const loader = new THREE.GLTFLoader();
-        const vrmUrl = 'https://www.dropbox.com/scl/fi/75d6auyc4l3ukjtuqepee/jyohuku.vrm?rlkey=rh6xnnsnq5yhepxm4lw7nvokz&st=8pqysz4o&dl=1';  // DropboxのVRMファイルURL
+        // GLTFLoaderのインスタンスを作成
+        const loader = new GLTFLoader();
+        const vrmUrl = 'https://example.com/your-vrm-file.vrm';  // VRMファイルのURL
 
         loader.load(vrmUrl, (gltf) => {
-            THREE.VRM.from(gltf).then((vrm) => {
+            VRM.from(gltf).then((vrm) => {
                 scene.add(vrm.scene);
-
-                // カメラの位置を調整
                 camera.position.set(0, 1.5, 3);
 
-                // アニメーションループ
                 function animate() {
                     requestAnimationFrame(animate);
                     vrm.update(0.1);
                     renderer.render(scene, camera);
                 }
-
                 animate();
             });
         });
-
-        // レンダリング
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
     </script>
+</head>
+<body>
+    <h1>VRMモデル表示</h1>
 </body>
 </html>
