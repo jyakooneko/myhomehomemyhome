@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Soundcloud引用 - myhomehomemyhome</title>
+    <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&amp;display=swap" rel="stylesheet">
+
+    <style>
+      #inputWrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #clearBtn {
+        cursor: pointer;
+        background: #eee;
+        border: 1px solid #ccc;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        user-select: none;
+      }
+      #clearBtn:hover {
+        background: #ddd;
+      }
+
+      /* コピー部分 */
+      #resultWrapper {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: #fafafa;
+        border-radius: 6px;
+      }
+      #copyBtn {
+        float: right;
+        cursor: pointer;
+        background: #eee;
+        border: 1px solid #ccc;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        user-select: none;
+        color: black;
+      }
+      #copyBtn:hover {
+        background: #ddd;
+      }
+      #result {
+        white-space: pre-wrap;
+        font-family: monospace;
+        margin-top: 6px;
+        color: black;
+      }
+    </style>
+  </head>
+
+  <body class="zen-kaku-gothic-new-light">
+    <div class="contents">
+      <h1>Soundcloud引用 - Dougubako</h1>
+      <p>てきとう。sakusya -kyokumei の形式のhtmlコードが出ます</p>
+      <p>※作者曲名はリンクから推測してるだけ。人力チェックしてね</p>
+      
+      <div id="inputWrapper">
+        <input id="urlInput" type="text" placeholder="SoundCloudのURL" style="flex:1;">
+        <div id="clearBtn" onclick="clearInput()">✕</div>
+      </div>
+
+      <div>
+        <label><input type="checkbox" id="wrapP" checked> pタグで囲む</label>
+      </div>
+
+      <button onclick="extract()">抽出</button>
+
+        <div id="resultWrapper" style="display:none;" color=white>
+          <div id="copyBtn" onclick="copyResult()">コピー</div>
+          <div id="result"></div>
+        </div>
+        
+      <p>作者: <span id="author"></span></p>
+      <p>曲名: <span id="title"></span></p>
+
+      <script>
+        function extract() {
+          const url = document.getElementById("urlInput").value;
+
+          if (!url.startsWith("https://soundcloud.com/")) {
+            alert("そのリンク、SoundCloudではない？");
+            return;
+          }
+
+          try {
+            const u = new URL(url);
+            const parts = u.pathname.split("/").filter(v => v.length > 0);
+
+            if (parts.length < 2) {
+              alert("リンクの一部が欠損しています");
+              return;
+            }
+
+            const author = parts[0];
+            const title = parts[1];
+
+            document.getElementById("author").textContent = author;
+            document.getElementById("title").textContent = title;
+
+            const escapedUrl = url.replace(/&/g, "&amp;");
+            const anchor = `<a href="${escapedUrl}" target="_blank">${author} - ${title}</a>`;
+            const useP = document.getElementById("wrapP").checked;
+
+            const output = useP ? `<p>${anchor}</p>` : anchor;
+
+            document.getElementById("result").textContent = output ;
+            document.getElementById("resultWrapper").style.display = "block";
+
+          } catch (e) {
+            alert("なんかのエラー。URLの形式ではない？");
+          }
+        }
+
+        function clearInput() {
+          document.getElementById("urlInput").value = "";
+          document.getElementById("author").textContent = "";
+          document.getElementById("title").textContent = "";
+          document.getElementById("result").textContent = "";
+          document.getElementById("resultWrapper").style.display = "none";
+        }
+
+        function copyResult() {
+          const text = document.getElementById("result").textContent;
+          navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById("copyBtn");
+            btn.textContent = "コピー済";
+            setTimeout(() => (btn.textContent = "コピー"), 800);
+          });
+        }
+      </script>
+    </div>
+  </body>
+</html>
