@@ -1,63 +1,15 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8">
-    <title>パスワード認証</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-            background-color: white;
-        }
-
-        input {
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            margin: 10px;
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            color: white;
-            background-color: rgb(65, 65, 65);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #000000;
-        }
-
-        #message {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <input type="password" id="password" placeholder="パスワード入力">
-    <button onclick="checkPassword()">ログイン</button>
-    <p id="message"></p>
-
-    <script>
-        function checkPassword() {
-            var password = document.getElementById("password").value;
-            if (password === "test123") {
-                document.getElementById("message").innerText = "認証成功！";
-                // 認証成功時にmodel-viewer.htmlへ遷移
-                setTimeout(function() {
-                    window.location.href = "model-viewer.html";  // model-viewer.htmlに遷移
-                }, 1000);  // 1秒後に遷移（認証メッセージが見える時間を確保）
-            } else {
-                document.getElementById("message").innerText = "パスワードが違います。";
-            }
-        }
-    </script>
-</body>
+      <title>myhomehomemyhome</title>
+      <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&amp;display=swap" rel="stylesheet">
+  </head>
+  <body class="zen-kaku-gothic-new-light">
+  <div class=contents>
+  </div>
+  </body>
 </html>
