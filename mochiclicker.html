@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://midomo.neocities.org/dougubako/mochiclicker -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>
+      餅クリッカー - myhomehomemyhome
+    </title>
+    
+    <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
+    
+    <style>
+    
+      .contents a {
+        pointer-events: auto;
+      }
+
+      body {
+        font-family: "Zen Kaku Gothic New", sans-serif;
+        padding: 10px 100px ;
+        margin-top: 100px;
+        overflow-x: hidden;
+        transition: background 1.5s;
+      }
+      
+      h1 {
+        margin-bottom: 40px;
+      }
+      
+      .text {
+        font-size: 64px;
+        font-weight: bold;
+      }
+      
+      .counter {
+        font-size: 20px;
+        text-align:center;
+        color: white;
+      }
+      
+      #mochi {
+        font-size: 120px;
+        cursor: pointer;
+        user-select: none;
+        text-align: center;
+        position: relative;
+        z-index: 20;
+        color: white;
+      
+        transition:
+          transform 0.15s cubic-bezier(.2,1.4,.4,1),
+          letter-spacing 0.15s;
+      }
+
+      #mochi:hover {
+        transform: scale(1.15, 1.25);
+        letter-spacing: 0.05em;
+      }
+      
+      #mochi:active {
+        transform: scale(1.25, 0.7);
+      }
+      
+      #mochi {
+        transition:
+          transform 0.18s cubic-bezier(.25,1.6,.5,1),
+          letter-spacing 0.15s;
+          
+      }
+      #mochi-area {
+        position: relative;
+        width: 100%;
+        height: 60vh;
+      }
+      
+      .mochi {
+        position: absolute;
+        font-size: 120px;
+        color: white;
+        user-select: none;
+        pointer-events: none; /* ←重要 */
+        transition: transform 0.15s cubic-bezier(.25,1.6,.5,1);
+      }
+
+
+
+      .mochi-float {
+        position: absolute;
+        font-size: 24px;
+        color: white;
+        animation: floatUp 1.5s forwards;
+        pointer-events: none;
+      }
+      
+      @keyframes floatUp {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-40px);
+        }
+      }
+
+    </style>
+    </head>
+    
+    <body class="zen-kaku-gothic-new-light">        
+      <div class="contents">
+        <h4>餅クリッカー</h4>
+      </div>
+      
+      <div class="counter">
+      <span id="count">8</span>
+      </div>
+
+      <div id="mochi">
+        餅
+      </div>
+      
+      <script>
+        let count = 0;
+        
+        const mochi = document.getElementById("mochi");
+        const counter = document.getElementById("count");
+        
+        console.log("mochi element:", mochi);
+        
+        mochi.addEventListener("click", (e) => {
+          count++;
+          counter.textContent = count;
+        
+          const float = document.createElement("div");
+          float.className = "mochi-float";
+          float.textContent = "もち";
+        
+          const rect = mochi.getBoundingClientRect();
+          float.style.left = rect.left + rect.width / 2 - 20 + "px";
+          float.style.top = rect.top - 10 + "px";
+
+        
+          document.body.appendChild(float);
+        
+          setTimeout(() => float.remove(), 1500);
+        });
+        
+        const area = document.getElementById("mochi-area");
+        const mochiList = [];
+        
+        function createMochi(x, y, level = 0) {
+          const el = document.createElement("div");
+          el.className = "mochi";
+          el.textContent = "餅";
+          area.appendChild(el);
+        
+          const mochi = {
+            el,
+            x,
+            y,
+            level,
+            count: 0,
+            need: 10 * (2 ** level),
+            radius: 80
+          };
+        
+          updatePosition(mochi);
+          mochiList.push(mochi);
+        }
+        
+        function updatePosition(m) {
+          m.el.style.left = m.x + "px";
+          m.el.style.top = m.y + "px";
+        }
+        
+        document.addEventListener("click", (e) => {
+          const x = e.clientX;
+          const y = e.clientY;
+        
+          mochiList.forEach((m) => {
+            const dx = x - (m.x + 60);
+            const dy = y - (m.y + 60);
+            const dist = Math.sqrt(dx*dx + dy*dy);
+        
+            if (dist < m.radius) {
+              hitMochi(m);
+            }
+          });
+        });
+        
+        function hitMochi(m) {
+          m.count++;
+          m.el.style.transform = "scale(1.25,0.7)";
+          setTimeout(() => m.el.style.transform = "", 80);
+        
+          if (m.count >= m.need) {
+            splitMochi(m);
+          }
+        }
+        
+        function splitMochi(m) {
+          const offset = 100;
+          createMochi(m.x - offset, m.y + offset, m.level + 1);
+          createMochi(m.x + offset, m.y + offset, m.level + 1);
+        
+          area.removeChild(m.el);
+          mochiList.splice(mochiList.indexOf(m), 1);
+        }
+
+      </script>
+
+
+  </body></html>
