@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+      <title>ポリではないthm - myhomehomemyhome</title>
+      <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    
+    .contents {
+      padding: 24px 0;
+    }
+    
+    svg {
+      width: 400px;
+      height: 400px;
+      display: block;
+      margin: 16px auto;
+    }
+    
+    .controls {
+      font-size: 14px;
+    }
+    
+    .controls input,
+    .controls select {
+      width: 80px;
+      margin: 4px;
+    }
+  </style>
+</head>
+  
+<body class="zen-kaku-gothic-new-light">
+  <div class="contents">
+  
+    <h1>ポリではないthm</h1>
+    <p>MVのための試行錯誤</p>
+    
+    <button id="bgToggle">グリーンバック切替</button>
+    
+    <div class="controls">
+    <p>角数</p>
+    <select id="polygonSelect">
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5" selected>5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+    
+    <p>速度</p>
+    <input type="number" id="speedInput" value="4" step="0.1">
+    
+    <p>各辺の長さ</p>
+    <div id="edgeInputs"></div>
+  </div>
+  
+  <svg viewBox="-200 -200 400 400">
+    <polyline id="polygon" fill="none" stroke="white" stroke-width="2"/>
+    <circle id="dot" r="5" fill="white"/>
+  </svg>
+  
+  <script>
+    const poly = document.getElementById("polygon");
+    const dot = document.getElementById("dot");
+    const speedInput = document.getElementById("speedInput");
+    const polygonSelect = document.getElementById("polygonSelect");
+    const edgeInputsDiv = document.getElementById("edgeInputs");
+    
+    let speed = Number(speedInput.value);
+    let n = Number(polygonSelect.value);
+    let baseRadius = 120;
+    let edgeScales = [];
+    let points = [];
+    let edges = [];
+    let totalLength = 0;
+    let progress = 0;
+    
+    speedInput.addEventListener("input", () => {
+      speed = Number(speedInput.value);
+    });
+    
+    function createRegularDirections(n) {
+      const dirs = [];
+      for (let i = 0; i < n; i++) {
+        const a1 = (Math.PI * 2 / n) * i - Math.PI / 2;
+        const a2 = (Math.PI * 2 / n) * (i + 1) - Math.PI / 2;
+        dirs.push({
+          x: Math.cos(a2) - Math.cos(a1),
+          y: Math.sin(a2) - Math.sin(a1)
+        });
+      }
+      return dirs;
+    }
+    
+    function rebuildPoints() {
+      const dirs = createRegularDirections(n);
+      points = [{x: 0, y: 0}];
+    
+      for (let i = 0; i < n; i++) {
+        const d = dirs[i];
+        const len = Math.hypot(d.x, d.y);
+        const scale = edgeScales[i];
+        points.push({
+          x: points[i].x + (d.x / len) * baseRadius * scale,
+          y: points[i].y + (d.y / len) * baseRadius * scale
+        });
+      }
+    
+      points.pop();
+    
+      let cx = 0;
+      let cy = 0;
+    
+      points.forEach(p => {
+        cx += p.x;
+        cy += p.y;
+      });
+    
+      cx /= points.length;
+      cy /= points.length;
+    
+      points = points.map(p => ({
+        x: p.x - cx,
+        y: p.y - cy
+      }));
+    }
+    
+    function updatePolyline() {
+      const p = [...points, points[0]]
+        .map(pt => `${pt.x},${pt.y}`)
+        .join(" ");
+      poly.setAttribute("points", p);
+      recalcEdges();
+    }
+    
+    function distance(a, b) {
+      return Math.hypot(b.x - a.x, b.y - a.y);
+    }
+    
+    function recalcEdges() {
+      edges = points.map((p, i) => {
+        const next = points[(i + 1) % points.length];
+        return {
+          start: p,
+          end: next,
+          length: distance(p, next)
+        };
+      });
+      totalLength = edges.reduce((s, e) => s + e.length, 0);
+      progress = 0;
+    }
+    
+    function rebuildEdgeInputs() {
+      edgeInputsDiv.innerHTML = "";
+      edgeScales = Array(n).fill(1);
+    
+      edgeScales.forEach((v, i) => {
+        const input = document.createElement("input");
+        input.type = "number";
+        input.step = "0.1";
+        input.value = "1";
+    
+        input.addEventListener("input", () => {
+          edgeScales[i] = Number(input.value);
+          rebuildPoints();
+          updatePolyline();
+        });
+    
+        edgeInputsDiv.append(`辺${i}:`, input);
+        edgeInputsDiv.appendChild(document.createElement("br"));
+      });
+    }
+    
+    polygonSelect.addEventListener("change", () => {
+      n = Number(polygonSelect.value);
+      rebuildEdgeInputs();
+      rebuildPoints();
+      updatePolyline();
+    });
+    
+    function animate() {
+      if (totalLength > 0) {
+        progress = (progress + speed) % totalLength;
+        let d = progress;
+    
+        for (const edge of edges) {
+          if (d <= edge.length) {
+            const t = d / edge.length;
+            const x = edge.start.x + (edge.end.x - edge.start.x) * t;
+            const y = edge.start.y + (edge.end.y - edge.start.y) * t;
+            dot.setAttribute("cx", x);
+            dot.setAttribute("cy", y);
+            break;
+          }
+          d -= edge.length;
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    
+    rebuildEdgeInputs();
+    rebuildPoints();
+    updatePolyline();
+    animate();
+    
+    const bgButton = document.getElementById("bgToggle");
+    let green = false;
+    
+    bgButton.addEventListener("click", () => {
+      green = !green;
+      document.body.style.background = green ? "#00ff00" : "black";
+    });
+  </script>
+  </div>
+  </body>
+</html>
