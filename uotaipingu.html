@@ -158,18 +158,23 @@ inputEl.addEventListener("keydown",(e)=>{
 
   const key = e.key.toLowerCase();
 
-  // a〜z以外は無効（Backspaceは許可）
+  // a〜z以外は無効
   if(!/^[a-z]$/.test(key)){
     e.preventDefault();
     return;
   }
-  const expected = currentWord.reading[inputEl.value.length];
 
-  if(key === expected){
-    // 1文字追加
-    inputEl.value += key;
+  const possibleReadings = currentWord.reading;
+  const currentInput = inputEl.value + key;
 
-    if(inputEl.value === currentWord.reading){
+  // 入力がどれかの候補の先頭と一致するか
+  const match = possibleReadings.find(r => r.startsWith(currentInput));
+
+  if(match){
+    inputEl.value = currentInput;
+
+    // 完全一致したら正解
+    if(possibleReadings.includes(currentInput)){
       score++;
       scoreEl.textContent = score;
       inputEl.value = "";
