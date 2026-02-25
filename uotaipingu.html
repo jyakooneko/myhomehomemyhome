@@ -36,6 +36,17 @@ h1{
   margin:20px 0;
   font-weight:bold;
   min-height:90px;
+  position: relative;
+}
+
+/* 読みがな用 */
+#reading{
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 22px;
+  color: #ffeb3b;
 }
 
 input{
@@ -78,6 +89,13 @@ button:disabled{
   opacity:0.5;
   cursor:not-allowed;
 }
+
+/* ヒント文言 */
+#hint{
+  margin-top:10px;
+  font-size:14px;
+  color:#ffeb3b;
+}
 </style>
 </head>
 <body>
@@ -85,9 +103,12 @@ button:disabled{
 <div class="card">
   <h1>🐟 うおタイピング</h1>
 
-  <div id="kanji">スタートを押してね！</div>
+  <div id="kanji">スタートを押してね！
+    <div id="reading"></div>
+  </div>
 
   <input type="text" id="input">
+  <div id="hint">エンターキーでヒント</div>
 
   <div class="stats">
     <div>⏰ <span id="time">60</span>s</div>
@@ -125,7 +146,6 @@ const words = [
   { kanji: "鯯", reading: ["sappa","saxpa"] },
   { kanji: "鯖", reading: ["saba"] },
   { kanji: "鮫", reading: ["same"] },
-  
 ];
 
 let remainingWords = [];
@@ -137,6 +157,7 @@ let playing = false;
 let startTime = 0;
 
 const kanjiEl = document.getElementById("kanji");
+const readingEl = document.getElementById("reading");
 const inputEl = document.getElementById("input");
 const scoreEl = document.getElementById("score");
 const timeEl = document.getElementById("time");
@@ -149,7 +170,6 @@ function startGame(){
   score = 0;
   time = 60;
   startTime = Date.now();
-
   remainingWords = [...words];
 
   scoreEl.textContent = score;
@@ -161,12 +181,15 @@ function startGame(){
   inputEl.focus();
 
   startBtn.disabled = true;
+  
+  // 読みがなを消す
+  readingEl.textContent = "";
+
   nextWord();
 
   timer = setInterval(()=>{
     time--;
     timeEl.textContent = time;
-
     if(time <= 0){
       clearInterval(timer);
       endGame(false);
@@ -183,18 +206,22 @@ function nextWord(){
 
   const index = Math.floor(Math.random()*remainingWords.length);
   currentWord = remainingWords[index];
-
-
   remainingWords.splice(index,1);
 
-  kanjiEl.textContent = currentWord.kanji;
+  kanjiEl.firstChild.textContent = currentWord.kanji;
+  readingEl.textContent = "";
 }
 
+// エンターキーで読みがな表示
 inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
-  const key = e.key.toLowerCase();
+  if(e.key === "Enter"){
+    readingEl.textContent = currentWord.reading.join(", ");
+    return;
+  }
 
+  const key = e.key.toLowerCase();
   if(!/^[a-z]$/.test(key)){
     e.preventDefault();
     return;
@@ -202,12 +229,10 @@ inputEl.addEventListener("keydown",(e)=>{
 
   const possibleReadings = currentWord.reading;
   const currentInput = inputEl.value + key;
-
   const match = possibleReadings.find(r => r.startsWith(currentInput));
 
   if(match){
     inputEl.value = currentInput;
-
     if(possibleReadings.includes(currentInput)){
       score++;
       scoreEl.textContent = score;
@@ -226,9 +251,11 @@ function endGame(allClear){
 
   if(allClear){
     const clearTime = Math.floor((Date.now() - startTime) / 1000);
-    kanjiEl.textContent = clearTime + "秒で答えられました！";
+    kanjiEl.firstChild.textContent = clearTime + "秒で答えられました！";
+    readingEl.textContent = "";
   }else{
-    kanjiEl.textContent = score + "/" + words.length + "問正解！";
+    kanjiEl.firstChild.textContent = score + "/" + words.length + "問正解！";
+    readingEl.textContent = "";
   }
 }
 
