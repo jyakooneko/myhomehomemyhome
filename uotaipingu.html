@@ -154,15 +154,31 @@ function nextWord(){
   kanjiEl.textContent = currentWord.kanji;
 }
 
-inputEl.addEventListener("input",()=>{
+inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
-  if(inputEl.value.toLowerCase() === currentWord.reading){
-    score++;
-    scoreEl.textContent = score;
-    inputEl.value = "";
-    nextWord();
+  const key = e.key.toLowerCase();
+
+  // a〜z以外は無効（Backspaceは許可）
+  if(!/^[a-z]$/.test(key)){
+    e.preventDefault();
+    return;
   }
+  const expected = currentWord.reading[inputEl.value.length];
+
+  if(key === expected){
+    // 1文字追加
+    inputEl.value += key;
+
+    if(inputEl.value === currentWord.reading){
+      score++;
+      scoreEl.textContent = score;
+      inputEl.value = "";
+      nextWord();
+    }
+  }
+
+  e.preventDefault();
 });
 
 function endGame(){
