@@ -375,7 +375,7 @@ inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
 if(e.key === "Enter"){
-  readingEl.textContent = currentWord.reading.join(", ");
+  readingEl.textContent = currentWord.reading[0];
   hintUsed++;
   hintCountEl.textContent = `ヒント: ${hintUsed}`;
 
