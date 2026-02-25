@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>魚編タイピング</title>
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    margin-top: 80px;
+  }
+  #kanji {
+    font-size: 60px;
+    margin: 20px;
+  }
+  input {
+    font-size: 24px;
+    padding: 5px;
+  }
+  #info {
+    margin-top: 20px;
+    font-size: 20px;
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🐟 魚編タイピング（60秒）</h1>
+
+<div id="kanji">スタートを押してね</div>
+<input type="text" id="input" disabled>
+<div id="info">
+  ⏰ 残り時間: <span id="time">60</span> 秒<br>
+  🏆 スコア: <span id="score">0</span>
+</div>
+<button onclick="startGame()">スタート</button>
+
+<script>
+const words = [
+  { kanji: "鯖", reading: "saba" },
+  { kanji: "鮭", reading: "sake" },
+  { kanji: "鰤", reading: "buri" },
+  { kanji: "鯛", reading: "tai" },
+  { kanji: "鰻", reading: "unagi" },
+  { kanji: "鮪", reading: "maguro" }
+];
+
+let currentWord;
+let score = 0;
+let time = 60;
+let timer;
+
+const kanjiEl = document.getElementById("kanji");
+const inputEl = document.getElementById("input");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+
+function startGame() {
+  score = 0;
+  time = 60;
+  scoreEl.textContent = score;
+  timeEl.textContent = time;
+  inputEl.disabled = false;
+  inputEl.value = "";
+  inputEl.focus();
+  nextWord();
+
+  timer = setInterval(() => {
+    time--;
+    timeEl.textContent = time;
+    if (time <= 0) {
+      clearInterval(timer);
+      endGame();
+    }
+  }, 1000);
+}
+
+function nextWord() {
+  currentWord = words[Math.floor(Math.random() * words.length)];
+  kanjiEl.textContent = currentWord.kanji;
+}
+
+inputEl.addEventListener("input", () => {
+  if (inputEl.value.toLowerCase() === currentWord.reading) {
+    score++;
+    scoreEl.textContent = score;
+    inputEl.value = "";
+    nextWord();
+  }
+});
+
+function endGame() {
+  kanjiEl.textContent = "終了！あなたのスコアは " + score;
+  inputEl.disabled = true;
+}
+</script>
+
+</body>
+</html>
