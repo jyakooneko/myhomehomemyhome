@@ -107,11 +107,13 @@ const words = [
   { kanji: "鮪", reading: ["maguro"] }
 ];
 
+let remainingWords = [];
 let currentWord;
 let score = 0;
 let time = 60;
 let timer = null;
 let playing = false;
+let startTime = 0;
 
 const kanjiEl = document.getElementById("kanji");
 const inputEl = document.getElementById("input");
@@ -125,11 +127,14 @@ function startGame(){
   playing = true;
   score = 0;
   time = 60;
+  startTime = Date.now();
+
+  remainingWords = [...words];
 
   scoreEl.textContent = score;
   timeEl.textContent = time;
 
-  inputEl.style.display = "block"; // ← 表示
+  inputEl.style.display = "block";
   inputEl.disabled = false;
   inputEl.value = "";
   inputEl.focus();
@@ -143,13 +148,24 @@ function startGame(){
 
     if(time <= 0){
       clearInterval(timer);
-      endGame();
+      endGame(false);
     }
   },1000);
 }
 
 function nextWord(){
-  currentWord = words[Math.floor(Math.random()*words.length)];
+  if(remainingWords.length === 0){
+    clearInterval(timer);
+    endGame(true);
+    return;
+  }
+
+  const index = Math.floor(Math.random()*remainingWords.length);
+  currentWord = remainingWords[index];
+
+
+  remainingWords.splice(index,1);
+
   kanjiEl.textContent = currentWord.kanji;
 }
 
@@ -158,7 +174,6 @@ inputEl.addEventListener("keydown",(e)=>{
 
   const key = e.key.toLowerCase();
 
-  // a〜z以外は無効
   if(!/^[a-z]$/.test(key)){
     e.preventDefault();
     return;
@@ -167,13 +182,11 @@ inputEl.addEventListener("keydown",(e)=>{
   const possibleReadings = currentWord.reading;
   const currentInput = inputEl.value + key;
 
-  // 入力がどれかの候補の先頭と一致するか
   const match = possibleReadings.find(r => r.startsWith(currentInput));
 
   if(match){
     inputEl.value = currentInput;
 
-    // 完全一致したら正解
     if(possibleReadings.includes(currentInput)){
       score++;
       scoreEl.textContent = score;
@@ -185,11 +198,17 @@ inputEl.addEventListener("keydown",(e)=>{
   e.preventDefault();
 });
 
-function endGame(){
+function endGame(allClear){
   playing = false;
-  kanjiEl.textContent = "終了！スコア: " + score;
-  inputEl.style.display = "none"; // ← 非表示に戻す
+  inputEl.style.display = "none";
   startBtn.disabled = false;
+
+  if(allClear){
+    const clearTime = Math.floor((Date.now() - startTime) / 1000);
+    kanjiEl.textContent = clearTime + "秒で答えられました！";
+  }else{
+    kanjiEl.textContent = score + "/" + words.length + "問正解！";
+  }
 }
 
 startBtn.addEventListener("click", startGame);
