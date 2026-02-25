@@ -39,7 +39,7 @@ h1{
   position: relative;
 }
 
-/* 読みがな用 */
+
 #reading{
   position: absolute;
   top: -30px;
@@ -90,7 +90,7 @@ button:disabled{
   cursor:not-allowed;
 }
 
-/* ヒント文言 */
+
 #hint{
   margin-top:10px;
   font-size:14px;
@@ -181,8 +181,7 @@ function startGame(){
   inputEl.focus();
 
   startBtn.disabled = true;
-  
-  // 読みがなを消す
+
   readingEl.textContent = "";
 
   nextWord();
