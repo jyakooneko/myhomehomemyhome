@@ -424,7 +424,7 @@ function endGame(allClear){
     const finalTime = Date.now() - startTime;
     kanjiTextEl.innerHTML = `
       ${formatTime(finalTime)}<br>
-      ヒント${hintUsed}回使用
+      ヒント${hintUsed}回
     `;
   }else{
     kanjiTextEl.textContent = `${score}/${totalQuestions}問正解！`;
