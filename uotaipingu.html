@@ -12,7 +12,7 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  font-family:'Zen Kaku Gothic New', sans-serif;
+  font-family:'Zen Kaku Gothic New','Hiragino Sans','Meiryo',sans-serif;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:white;
 }
@@ -24,6 +24,7 @@ body{
   border-radius:20px;
   width:400px;
   box-shadow:0 0 30px rgba(0,0,0,0.5);
+  text-align:center;
 }
 
 h1{
@@ -35,6 +36,7 @@ h1{
   font-size:70px;
   margin:20px 0;
   font-weight:bold;
+  min-height:90px;
 }
 
 input{
@@ -45,6 +47,7 @@ input{
   border-radius:10px;
   outline:none;
   text-align:center;
+  display:none; /* ← 最初は非表示 */
 }
 
 .stats{
@@ -83,9 +86,9 @@ button:disabled{
 <div class="card">
   <h1>🐟 うおタイピング</h1>
 
-  <div id="kanji">スタート！</div>
+  <div id="kanji">スタートを押してね！</div>
 
-  <input type="text" id="input" disabled>
+  <input type="text" id="input">
 
   <div class="stats">
     <div>⏰ <span id="time">60</span>s</div>
@@ -127,6 +130,7 @@ function startGame(){
   scoreEl.textContent = score;
   timeEl.textContent = time;
 
+  inputEl.style.display = "block"; // ← 表示
   inputEl.disabled = false;
   inputEl.value = "";
   inputEl.focus();
@@ -164,7 +168,7 @@ inputEl.addEventListener("input",()=>{
 function endGame(){
   playing = false;
   kanjiEl.textContent = "終了！スコア: " + score;
-  inputEl.disabled = true;
+  inputEl.style.display = "none"; // ← 非表示に戻す
   startBtn.disabled = false;
 }
 
