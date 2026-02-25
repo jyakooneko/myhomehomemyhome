@@ -1,44 +1,99 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>うおタイピング</title>
+<meta charset="UTF-8">
+<title>うおタイピング</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-  body {
-    font-family: sans-serif;
-    text-align: center;
-    margin-top: 80px;
-  }
-  #kanji {
-    font-size: 60px;
-    margin: 20px;
-  }
-  input {
-    font-size: 24px;
-    padding: 5px;
-  }
-  #info {
-    margin-top: 20px;
-    font-size: 20px;
-  }
-  button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 18px;
-  }
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:'Zen Kaku Gothic New', sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+}
+
+.card{
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(15px);
+  padding:40px;
+  border-radius:20px;
+  width:400px;
+  box-shadow:0 0 30px rgba(0,0,0,0.5);
+}
+
+h1{
+  margin-top:0;
+  font-weight:700;
+}
+
+#kanji{
+  font-size:70px;
+  margin:20px 0;
+  font-weight:bold;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  font-size:22px;
+  border:none;
+  border-radius:10px;
+  outline:none;
+  text-align:center;
+}
+
+.stats{
+  margin-top:20px;
+  font-size:18px;
+  display:flex;
+  justify-content:space-between;
+}
+
+button{
+  margin-top:25px;
+  width:100%;
+  padding:12px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  color:white;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px #00c6ff;
+}
+
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
 </style>
 </head>
 <body>
 
-<h1>うおタイピング（60秒）</h1>
+<div class="card">
+  <h1>🐟 うおタイピング</h1>
 
-<div id="info">スタートを押してスタート</div>
-<input type="text" id="input" disabled>
-<div id="info">
-  ⏰ : <span id="time">60</span> 秒<br>
-  🏆 : <span id="score">0</span>
+  <div id="kanji">スタート！</div>
+
+  <input type="text" id="input" disabled>
+
+  <div class="stats">
+    <div>⏰ <span id="time">60</span>s</div>
+    <div>🏆 <span id="score">0</span></div>
+  </div>
+
+  <button id="startBtn">スタート</button>
 </div>
-<button onclick="startGame()">スタート</button>
 
 <script>
 const words = [
@@ -53,40 +108,52 @@ const words = [
 let currentWord;
 let score = 0;
 let time = 60;
-let timer;
+let timer = null;
+let playing = false;
 
 const kanjiEl = document.getElementById("kanji");
 const inputEl = document.getElementById("input");
 const scoreEl = document.getElementById("score");
 const timeEl = document.getElementById("time");
+const startBtn = document.getElementById("startBtn");
 
-function startGame() {
+function startGame(){
+  if(playing) return;
+
+  playing = true;
   score = 0;
   time = 60;
+
   scoreEl.textContent = score;
   timeEl.textContent = time;
+
   inputEl.disabled = false;
   inputEl.value = "";
   inputEl.focus();
+
+  startBtn.disabled = true;
   nextWord();
 
-  timer = setInterval(() => {
+  timer = setInterval(()=>{
     time--;
     timeEl.textContent = time;
-    if (time <= 0) {
+
+    if(time <= 0){
       clearInterval(timer);
       endGame();
     }
-  }, 1000);
+  },1000);
 }
 
-function nextWord() {
-  currentWord = words[Math.floor(Math.random() * words.length)];
+function nextWord(){
+  currentWord = words[Math.floor(Math.random()*words.length)];
   kanjiEl.textContent = currentWord.kanji;
 }
 
-inputEl.addEventListener("input", () => {
-  if (inputEl.value.toLowerCase() === currentWord.reading) {
+inputEl.addEventListener("input",()=>{
+  if(!playing) return;
+
+  if(inputEl.value.toLowerCase() === currentWord.reading){
     score++;
     scoreEl.textContent = score;
     inputEl.value = "";
@@ -94,10 +161,14 @@ inputEl.addEventListener("input", () => {
   }
 });
 
-function endGame() {
-  kanjiEl.textContent = "終了！あなたのスコアは " + score;
+function endGame(){
+  playing = false;
+  kanjiEl.textContent = "終了！スコア: " + score;
   inputEl.disabled = true;
+  startBtn.disabled = false;
 }
+
+startBtn.addEventListener("click", startGame);
 </script>
 
 </body>
