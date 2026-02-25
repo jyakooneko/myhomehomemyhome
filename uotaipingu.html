@@ -94,8 +94,50 @@ button:disabled{
 #hint{
   margin-top:30px;
   font-size:14px;
-  color:#white;
+  color:white;
 }
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  backdrop-filter:blur(8px);
+  z-index:100;
+}
+
+.modalContent{
+  background:rgba(255,255,255,0.1);
+  padding:30px;
+  border-radius:20px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 0 30px rgba(0,0,0,0.5);
+}
+
+.modalContent h2{
+  margin-top:0;
+}
+
+.modeBtn{
+  margin-top:15px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  color:white;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.modeBtn:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px #00c6ff;
+}  
+  
 </style>
 </head>
 <body>
@@ -116,6 +158,18 @@ button:disabled{
   </div>
 
   <button id="startBtn">スタート</button>
+</div>
+
+<div id="modeModal" class="modal">
+  <div class="modalContent">
+    <h2>モードを選択</h2>
+    <button class="modeBtn" data-mode="normal">
+      ノーマルモード<br><small>60秒で何問いける？</small>
+    </button>
+    <button class="modeBtn" data-mode="timeattack">
+      タイムアタックモード<br><small>全問クリアまで計測</small>
+    </button>
+  </div>
 </div>
 
 <script>
@@ -206,6 +260,8 @@ const words = [
   { kanji: "鰐", reading: ["wani"] },
 ];
 
+let mode = "normal"; 
+const modal = document.getElementById("modeModal");
 let remainingWords = [];
 let currentWord;
 let score = 0;
@@ -226,12 +282,17 @@ function startGame(){
 
   playing = true;
   score = 0;
-  time = 60;
-  startTime = Date.now();
   remainingWords = [...words];
+  startTime = Date.now();
+
+  if(mode === "normal"){
+    time = 60;
+    timeEl.textContent = time;
+  }else{
+    timeEl.textContent = "-";
+  }
 
   scoreEl.textContent = score;
-  timeEl.textContent = time;
 
   inputEl.style.display = "block";
   inputEl.disabled = false;
@@ -239,24 +300,25 @@ function startGame(){
   inputEl.focus();
 
   startBtn.disabled = true;
-
   readingEl.textContent = "";
 
   nextWord();
 
-  timer = setInterval(()=>{
-    time--;
-    timeEl.textContent = time;
-    if(time <= 0){
-      clearInterval(timer);
-      endGame(false);
-    }
-  },1000);
+  if(mode === "normal"){
+    timer = setInterval(()=>{
+      time--;
+      timeEl.textContent = time;
+      if(time <= 0){
+        clearInterval(timer);
+        endGame(false);
+      }
+    },1000);
+  }
 }
 
 function nextWord(){
   if(remainingWords.length === 0){
-    clearInterval(timer);
+    if(timer) clearInterval(timer);
     endGame(true);
     return;
   }
@@ -268,6 +330,7 @@ function nextWord(){
   kanjiEl.firstChild.textContent = currentWord.kanji;
   readingEl.textContent = "";
 }
+  
 
 // エンターキーで読みがな表示
 inputEl.addEventListener("keydown",(e)=>{
@@ -306,17 +369,28 @@ function endGame(allClear){
   inputEl.style.display = "none";
   startBtn.disabled = false;
 
-  if(allClear){
-    const clearTime = Math.floor((Date.now() - startTime) / 1000);
-    kanjiEl.firstChild.textContent = clearTime + "秒で答えられました！";
-    readingEl.textContent = "";
+  if(mode === "timeattack"){
+    const clearTime = Math.floor((Date.now() - startTime)/1000);
+    kanjiEl.firstChild.textContent = clearTime + "秒で全問クリア！";
   }else{
-    kanjiEl.firstChild.textContent = score + "/" + words.length + "問正解！";
-    readingEl.textContent = "";
+    kanjiEl.firstChild.textContent = score + "問正解！";
   }
+
+  readingEl.textContent = "";
 }
 
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", ()=>{
+  modal.style.display = "flex";
+});
+  
+document.querySelectorAll(".modeBtn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    mode = btn.dataset.mode;
+    modal.style.display = "none";
+    startGame();
+  });
+});
+  
 </script>
 
 </body>
