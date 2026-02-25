@@ -332,20 +332,29 @@ function nextWord(){
 }
   
 
-// エンターキーで読みがな表示
+
 inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
-  if(e.key === "Enter"){
-    readingEl.textContent = currentWord.reading.join(", ");
-    return;
+if(e.key === "Enter"){
+  readingEl.textContent = currentWord.reading.join(", ");
+
+  if(mode === "normal"){
+    time -= 5;
+    if(time < 0) time = 0;
+    timeEl.textContent = time;
+
+    if(time <= 0){
+      clearInterval(timer);
+      endGame(false);
+    }
+
+  }else if(mode === "timeattack"){
+    startTime -= 5000; 
   }
 
-  const key = e.key.toLowerCase();
-  if(!/^[a-z]$/.test(key)){
-    e.preventDefault();
-    return;
-  }
+  return;
+}
 
   const possibleReadings = currentWord.reading;
   const currentInput = inputEl.value + key;
