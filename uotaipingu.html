@@ -382,7 +382,7 @@ function endGame(allClear){
     const clearTime = Math.floor((Date.now() - startTime)/1000);
     kanjiEl.firstChild.textContent = clearTime + "秒で全問クリア！";
   }else{
-    kanjiEl.firstChild.textContent = score + "問正解！";
+    kanjiEl.firstChild.textContent = score + "/40問正解！";
   }
 
   readingEl.textContent = "";
