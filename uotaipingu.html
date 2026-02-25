@@ -136,7 +136,21 @@ button:disabled{
 .modeBtn:hover{
   transform:scale(1.05);
   box-shadow:0 0 15px #00c6ff;
-}  
+} 
+
+.topInfo{
+  position:absolute;
+  top:15px;
+  left:20px;
+  right:20px;
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+.card{
+  position:relative;
+}
   
 </style>
 </head>
@@ -144,6 +158,11 @@ button:disabled{
 
 <div class="card">
   <h1>うおタイピング</h1>
+
+  <div class="topInfo">
+    <div id="progress">0/0</div>
+    <div id="hintCount">ヒント: 0</div>
+  </div>
 
   <div id="kanji">スタートを押してね！
     <div id="reading"></div>
@@ -269,7 +288,12 @@ let time = 60;
 let timer = null;
 let playing = false;
 let startTime = 0;
+let hintUsed = 0;
+const totalQuestions = words.length;
 
+const progressEl = document.getElementById("progress");
+const hintCountEl = document.getElementById("hintCount");
+  
 const kanjiEl = document.getElementById("kanji");
 const readingEl = document.getElementById("reading");
 const inputEl = document.getElementById("input");
@@ -277,19 +301,38 @@ const scoreEl = document.getElementById("score");
 const timeEl = document.getElementById("time");
 const startBtn = document.getElementById("startBtn");
 
+function formatTime(ms){
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  const milli = Math.floor((ms % 1000) / 10);
+
+  return (
+    String(minutes).padStart(2,"0") + ":" +
+    String(seconds).padStart(2,"0") + ":" +
+    String(milli).padStart(2,"0")
+  );
+} 
+  
 function startGame(){
   if(playing) return;
 
   playing = true;
   score = 0;
+  hintUsed = 0;
   remainingWords = [...words];
   startTime = Date.now();
+
+  progressEl.textContent = `0/${totalQuestions}`;
+  hintCountEl.textContent = `ヒント: 0`;
 
   if(mode === "normal"){
     time = 60;
     timeEl.textContent = time;
   }else{
-    timeEl.textContent = "-";
+    timer = setInterval(()=>{
+      const elapsed = Date.now() - startTime;
+      timeEl.textContent = formatTime(elapsed);
+    },10);
   }
 
   scoreEl.textContent = score;
@@ -303,6 +346,7 @@ function startGame(){
   readingEl.textContent = "";
 
   nextWord();
+}
 
   if(mode === "normal"){
     timer = setInterval(()=>{
@@ -329,15 +373,18 @@ function nextWord(){
 
   kanjiEl.firstChild.textContent = currentWord.kanji;
   readingEl.textContent = "";
-}
-  
 
+  const currentNumber = totalQuestions - remainingWords.length;
+  progressEl.textContent = `${currentNumber}/${totalQuestions}`;
+}
 
 inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
 if(e.key === "Enter"){
   readingEl.textContent = currentWord.reading.join(", ");
+  hintUsed++;
+  hintCountEl.textContent = `ヒント: ${hintUsed}`;
 
   if(mode === "normal"){
     time -= 5;
@@ -348,9 +395,8 @@ if(e.key === "Enter"){
       clearInterval(timer);
       endGame(false);
     }
-
-  }else if(mode === "timeattack"){
-    startTime -= 5000; 
+  }else{
+    startTime -= 5000;
   }
 
   return;
@@ -364,6 +410,7 @@ if(e.key === "Enter"){
     inputEl.value = currentInput;
     if(possibleReadings.includes(currentInput)){
       score++;
+      progressEl.textContent = `${score}/${totalQuestions}`;
       scoreEl.textContent = score;
       inputEl.value = "";
       nextWord();
@@ -377,12 +424,16 @@ function endGame(allClear){
   playing = false;
   inputEl.style.display = "none";
   startBtn.disabled = false;
+  if(timer) clearInterval(timer);
 
   if(mode === "timeattack"){
-    const clearTime = Math.floor((Date.now() - startTime)/1000);
-    kanjiEl.firstChild.textContent = clearTime + "秒で全問クリア！";
+    const finalTime = Date.now() - startTime;
+    kanjiEl.innerHTML = `
+      ${formatTime(finalTime)}<br>
+      ヒント${hintUsed}回使用
+    `;
   }else{
-    kanjiEl.firstChild.textContent = score + "/40問正解！";
+    kanjiEl.textContent = `${score}/${totalQuestions}問正解！`;
   }
 
   readingEl.textContent = "";
