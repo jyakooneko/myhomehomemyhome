@@ -357,7 +357,7 @@ if(e.key === "Enter"){
 }
 
   const possibleReadings = currentWord.reading;
-  const currentInput = inputEl.value + key;
+  const currentInput = inputEl.value + e.key;
   const match = possibleReadings.find(r => r.startsWith(currentInput));
 
   if(match){
