@@ -164,9 +164,10 @@ button:disabled{
     <div id="hintCount">ヒント: 0</div>
   </div>
 
-  <div id="kanji">読めますよ<br>うに
-    <div id="reading"></div>
-  </div>
+<div id="kanji">
+  <div id="kanjiText">読めますよ<br>うに</div>
+  <div id="reading"></div>
+</div>
 
   <input type="text" id="input">
   <div id="hint">エンターキーでヒント(5秒のペナルティが付きます)</div>
@@ -279,6 +280,7 @@ const words = [
   { kanji: "鰐", reading: ["wani"] },
 ];
 
+const kanjiTextEl = document.getElementById("kanjiText");
 let mode = "normal"; 
 const modal = document.getElementById("modeModal");
 let remainingWords = [];
@@ -315,6 +317,8 @@ function formatTime(ms){
   
 function startGame(){
   if(playing) return;
+  
+  kanjiTextEl.textContent = "";
 
   playing = true;
   score = 0;
@@ -349,6 +353,7 @@ function startGame(){
 }
 
 function nextWord(){
+
   if(remainingWords.length === 0){
     if(timer) clearInterval(timer);
     endGame(true);
@@ -359,7 +364,7 @@ function nextWord(){
   currentWord = remainingWords[index];
   remainingWords.splice(index,1);
 
-  kanjiEl.firstChild.textContent = currentWord.kanji;
+  kanjiTextEl.textContent = currentWord.kanji;
   readingEl.textContent = "";
 
   const currentNumber = totalQuestions - remainingWords.length;
@@ -409,6 +414,7 @@ if(e.key === "Enter"){
 });
 
 function endGame(allClear){
+
   playing = false;
   inputEl.style.display = "none";
   startBtn.disabled = false;
@@ -416,15 +422,19 @@ function endGame(allClear){
 
   if(mode === "timeattack"){
     const finalTime = Date.now() - startTime;
-    kanjiEl.innerHTML = `
+    kanjiTextEl.innerHTML = `
       ${formatTime(finalTime)}<br>
       ヒント${hintUsed}回使用
     `;
   }else{
-    kanjiEl.textContent = `${score}/${totalQuestions}問正解！`;
+    kanjiTextEl.textContent = `${score}/${totalQuestions}問正解！`;
   }
 
   readingEl.textContent = "";
+
+  if(!allClear){
+    kanjiTextEl.innerHTML = "読めますよ<br>うに";
+  }
 }
 
 startBtn.addEventListener("click", ()=>{
