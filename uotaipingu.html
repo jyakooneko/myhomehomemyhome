@@ -169,7 +169,14 @@ button:disabled{
   <div id="reading"></div>
 </div>
 
-  <input type="text" id="input">
+  <input 
+  type="text" 
+  id="input"
+  autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+  >
   <div id="hint">エンターキーでヒント(5秒のペナルティが付きます)</div>
 
   <div class="stats">
@@ -374,36 +381,42 @@ function nextWord(){
 inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
 
-if(e.key === "Enter"){
-  readingEl.textContent = currentWord.reading.join(", ");
-  hintUsed++;
-  hintCountEl.textContent = `ヒント: ${hintUsed}`;
+  // Enterはヒント
+  if(e.key === "Enter"){
+    readingEl.textContent = currentWord.reading.join(", ");
+    hintUsed++;
+    hintCountEl.textContent = `ヒント: ${hintUsed}`;
 
-  if(mode === "normal"){
-    time -= 5;
-    if(time < 0) time = 0;
-    timeEl.textContent = time;
-
-    if(time <= 0){
-      clearInterval(timer);
-      endGame(false);
+    if(mode === "normal"){
+      time -= 5;
+      if(time < 0) time = 0;
+      timeEl.textContent = time;
+      if(time <= 0){
+        endGame(false);
+      }
+    }else{
+      startTime -= 5000;
     }
-  }else{
-    startTime -= 5000;
+
+    e.preventDefault();
+    return;
   }
 
-  return;
-}
 
+  if(!/^[a-zA-Z]$/.test(e.key)){
+    e.preventDefault();
+    return;
+  }
+
+  const currentInput = inputEl.value + e.key.toLowerCase();
   const possibleReadings = currentWord.reading;
-  const currentInput = inputEl.value + e.key;
   const match = possibleReadings.find(r => r.startsWith(currentInput));
 
   if(match){
     inputEl.value = currentInput;
+
     if(possibleReadings.includes(currentInput)){
       score++;
-      progressEl.textContent = `${score}/${totalQuestions}`;
       scoreEl.textContent = score;
       inputEl.value = "";
       nextWord();
