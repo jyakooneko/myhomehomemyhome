@@ -415,6 +415,7 @@ inputEl.addEventListener("keydown",(e)=>{
   }
 
 if(e.key === "Enter"){
+  e.preventDefault(); 
 
   if(hintUsedThisQuestion) return;
   
