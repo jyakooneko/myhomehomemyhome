@@ -306,6 +306,7 @@ let timer = null;
 let playing = false;
 let startTime = 0;
 let hintUsed = 0;
+let hintUsedThisQuestion = false;
 const totalQuestions = words.length;
 
 const progressEl = document.getElementById("progress");
@@ -393,6 +394,8 @@ function nextWord(){
   kanjiTextEl.textContent = currentWord.kanji;
   readingEl.textContent = "";
 
+  hintUsedThisQuestion = false;
+
   const currentNumber = totalQuestions - remainingWords.length;
   progressEl.textContent = `${currentNumber}/${totalQuestions}`;
 }
@@ -415,6 +418,8 @@ if(e.key === "Enter"){
   readingEl.textContent = currentWord.reading[0];
   hintUsed++;
   hintCountEl.textContent = `ヒント: ${hintUsed}`;
+
+  hintUsedThisQuestion = true;
 
   if(mode === "normal"){
     time -= 5;
