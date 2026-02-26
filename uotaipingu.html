@@ -59,7 +59,7 @@ input{
   text-align:center;
   display:none; 
   background-color: transparent;
-  color: white;    
+  color: white;  
 }
 
 .stats{
@@ -179,7 +179,10 @@ button:disabled{
     autocorrect="off"
     autocapitalize="off"
     spellcheck="false"
-  >
+    inputmode="latin"
+    lang="en"
+    style="ime-mode: disabled;"
+    >
 </form>
   <div id="hint">エンターキーでヒント(5秒のペナルティが付きます)</div>
 
@@ -326,6 +329,10 @@ function formatTime(ms){
     String(milli).padStart(2,"0")
   );
 } 
+
+inputEl.addEventListener("input", () => {
+  inputEl.value = inputEl.value.replace(/[^a-z]/g, "");
+});
   
 function startGame(){
   if(playing) return;
