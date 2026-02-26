@@ -396,6 +396,17 @@ function nextWord(){
 
 inputEl.addEventListener("keydown",(e)=>{
   if(!playing) return;
+  
+  const allowedKeys = [
+    "Enter"
+  ];
+
+  const isAlphabet = /^[a-z]$/.test(e.key);
+
+  if(!isAlphabet && !allowedKeys.includes(e.key)){
+    e.preventDefault();
+    return;
+  }
 
 if(e.key === "Enter"){
   readingEl.textContent = currentWord.reading[0];
