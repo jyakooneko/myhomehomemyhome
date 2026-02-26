@@ -340,15 +340,26 @@ function startGame(){
   progressEl.textContent = `0/${totalQuestions}`;
   hintCountEl.textContent = `ヒント: 0`;
 
-  if(mode === "normal"){
-    time = 60;
+if(mode === "normal"){
+  time = 60;
+  timeEl.textContent = time;
+
+  timer = setInterval(()=>{
+    time--;
     timeEl.textContent = time;
-  }else{
-    timer = setInterval(()=>{
-      const elapsed = Date.now() - startTime;
-      timeEl.textContent = formatTime(elapsed);
-    },10);
-  }
+
+    if(time <= 0){
+      clearInterval(timer);
+      endGame(false);
+    }
+  },1000);
+
+}else{
+  timer = setInterval(()=>{
+    const elapsed = Date.now() - startTime;
+    timeEl.textContent = formatTime(elapsed);
+  },10);
+}
 
   scoreEl.textContent = score;
 
