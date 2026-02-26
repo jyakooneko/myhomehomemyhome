@@ -448,7 +448,6 @@ if(e.key === "Enter"){
     inputEl.value = currentInput;
     if(possibleReadings.includes(currentInput)){
       score++;
-      progressEl.textContent = `${score}/${totalQuestions}`;
       scoreEl.textContent = score;
       inputEl.value = "";
       nextWord();
