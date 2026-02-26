@@ -329,10 +329,6 @@ function formatTime(ms){
     String(milli).padStart(2,"0")
   );
 } 
-
-inputEl.addEventListener("input", () => {
-  inputEl.value = inputEl.value.replace(/[^a-z]/g, "");
-});
   
 function startGame(){
   if(playing) return;
