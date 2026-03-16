@@ -1,84 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>myhomehomemyhome</title>
-  <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&amp;display=swap" rel="stylesheet">
+<title>Arrow Escape</title>
+
+<link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
+
 <meta charset="UTF-8">
+
 <style>
-  #grid{
-    display:grid;
-    grid-template-columns:repeat(6,60px);
-    gap:4px;
-  }
-  .cell{
-    width:60px;
-    height:60px;
-    border:1px solid #aaa;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:30px;
-    cursor:pointer;
-  }
+#grid{
+  display:grid;
+  grid-template-columns:repeat(6,60px);
+  gap:4px;
+}
+
+.cell{
+  width:60px;
+  height:60px;
+  border:1px solid #aaa;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
+<h2>Arrow Escape</h2>
 <div id="grid"></div>
+<button onclick="init()">new</button>
 
 <script>
+
 const size = 6
-const arrows = ["↑","↓","←","→"]
+
 let board = []
 
+const headChar = ["▲","▶","▼","◀"]
+const bodyChar = ["│","─","│","─"]
+
+function rand(n){
+  return Math.floor(Math.random()*n)
+}
+
+function inside(x,y){
+  return x>=0 && y>=0 && x<size && y<size
+}
+
+function dirFrom(dx,dy){
+  if(dx==0 && dy==-1) return 0
+  if(dx==1 && dy==0) return 1
+  if(dx==0 && dy==1) return 2
+  if(dx==-1 && dy==0) return 3
+}
+
 function init(){
-  board = []
+
+  board=[]
+
   for(let y=0;y<size;y++){
     board[y]=[]
     for(let x=0;x<size;x++){
-      board[y][x]=Math.random()<0.6 ?
-        arrows[Math.floor(Math.random()*4)] : null
+      board[y][x]=null
     }
   }
+
+  let attempts=0
+
+  while(attempts<50){
+    placeArrow()
+    attempts++
+  }
+
   draw()
 }
 
+function placeArrow(){
+
+  let side = rand(4)
+
+  let x,y,dx,dy
+
+  if(side==0){
+    x=rand(size); y=0
+    dx=0; dy=1
+  }
+
+  if(side==1){
+    x=size-1; y=rand(size)
+    dx=-1; dy=0
+  }
+
+  if(side==2){
+    x=rand(size); y=size-1
+    dx=0; dy=-1
+  }
+
+  if(side==3){
+    x=0; y=rand(size)
+    dx=1; dy=0
+  }
+
+  let len = 2 + rand(3)
+
+  let cells=[]
+
+  for(let i=0;i<len;i++){
+
+    let nx=x+dx*i
+    let ny=y+dy*i
+
+    if(!inside(nx,ny)) return
+    if(board[ny][nx]!=null) return
+
+    cells.push([nx,ny])
+  }
+
+  for(let i=0;i<cells.length;i++){
+
+    let [cx,cy]=cells[i]
+
+    board[cy][cx]={
+      type: i==cells.length-1 ? "head":"body",
+      dir: dirFrom(dx,dy)
+    }
+  }
+}
+
 function draw(){
-  const g = document.getElementById("grid")
+
+  const g=document.getElementById("grid")
   g.innerHTML=""
 
   for(let y=0;y<size;y++){
     for(let x=0;x<size;x++){
+
       const c=document.createElement("div")
       c.className="cell"
-      c.textContent = board[y][x] ?? ""
+
+      let cell=board[y][x]
+
+      if(cell){
+
+        if(cell.type=="head")
+          c.textContent=headChar[cell.dir]
+
+        if(cell.type=="body")
+          c.textContent=bodyChar[cell.dir]
+      }
+
       c.onclick=()=>move(x,y)
+
       g.appendChild(c)
     }
   }
 }
 
 function move(x,y){
-  let dir = board[y][x]
-  if(!dir) return
 
-  let dx=0,dy=0
-  if(dir=="↑") dy=-1
-  if(dir=="↓") dy=1
-  if(dir=="←") dx=-1
-  if(dir=="→") dx=1
+  let cell=board[y][x]
 
-  let nx=x, ny=y
+  if(!cell) return
+  if(cell.type!="head") return
+
+  let dx=[0,1,0,-1][cell.dir]
+  let dy=[-1,0,1,0][cell.dir]
+
+  let nx=x
+  let ny=y
 
   while(true){
+
     nx+=dx
     ny+=dy
 
-    if(nx<0||ny<0||nx>=size||ny>=size){
+    if(!inside(nx,ny)){
       board[y][x]=null
       break
     }
@@ -90,7 +192,9 @@ function move(x,y){
 
   draw()
 }
+
 init()
+
 </script>
 
 </body>
