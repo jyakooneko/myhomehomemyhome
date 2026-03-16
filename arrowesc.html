@@ -94,26 +94,32 @@ function placeArrow(){
 
   let side = rand(4)
 
-  let x,y,dx,dy
+  let x,y
+  let dx,dy
+  let dir
 
-  if(side==0){
+  if(side==0){        // 上から入る
     x=rand(size); y=0
     dx=0; dy=1
+    dir=0            // ▲ 外向き
   }
 
-  if(side==1){
+  if(side==1){       // 右から
     x=size-1; y=rand(size)
     dx=-1; dy=0
+    dir=1            // ▶ 外向き
   }
 
-  if(side==2){
+  if(side==2){       // 下から
     x=rand(size); y=size-1
     dx=0; dy=-1
+    dir=2            // ▼ 外向き
   }
 
-  if(side==3){
+  if(side==3){       // 左から
     x=0; y=rand(size)
     dx=1; dy=0
+    dir=3            // ◀ 外向き
   }
 
   let len = 2 + rand(2)
@@ -132,15 +138,14 @@ function placeArrow(){
   }
 
   arrowId++
+
   for(let i=0;i<cells.length;i++){
 
     let [cx,cy]=cells[i]
 
-    
-
     board[cy][cx]={
       type: i==cells.length-1 ? "head":"body",
-      dir: dirFrom(dx,dy),
+      dir: dir,
       id: arrowId
     }
   }
