@@ -41,6 +41,7 @@
 const size = 6
 
 let board = []
+let arrowId = 0
 
 const headChar = ["▲","▶","▼","◀"]
 const bodyChar = ["│","─","│","─"]
@@ -67,11 +68,15 @@ function init(){
   for(let y=0;y<size;y++){
     board[y]=[]
     for(let x=0;x<size;x++){
-      board[y][x]=null
+      board[y][x] = {
+        type: "head" | "body",
+        dir: 0..3,
+        id: number
+      }
     }
   }
 
-  let attempts=0
+  let attempts=200
 
   while(attempts<50){
     placeArrow()
@@ -107,7 +112,7 @@ function placeArrow(){
     dx=1; dy=0
   }
 
-  let len = 2 + rand(3)
+  let len = 2 + rand(2)
 
   let cells=[]
 
@@ -126,9 +131,12 @@ function placeArrow(){
 
     let [cx,cy]=cells[i]
 
+    arrowId++
+
     board[cy][cx]={
       type: i==cells.length-1 ? "head":"body",
-      dir: dirFrom(dx,dy)
+      dir: dirFrom(dx,dy),
+      id: arrowId
     }
   }
 }
@@ -162,6 +170,20 @@ function draw(){
   }
 }
 
+function removeArrow(id){
+
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+
+      if(board[y][x] && board[y][x].id==id){
+        board[y][x]=null
+      }
+
+    }
+  }
+
+}
+
 function move(x,y){
 
   let cell=board[y][x]
@@ -181,7 +203,7 @@ function move(x,y){
     ny+=dy
 
     if(!inside(nx,ny)){
-      board[y][x]=null
+      removeArrow(cell.id)
       break
     }
 
