@@ -68,19 +68,15 @@ function init(){
   for(let y=0;y<size;y++){
     board[y]=[]
     for(let x=0;x<size;x++){
-      board[y][x] = {
-        type: "head" | "body",
-        dir: 0..3,
-        id: number
-      }
+      board[y][x] = null
     }
   }
 
   let attempts=200
 
-  while(attempts<50){
+  while(attempts>0){
     placeArrow()
-    attempts++
+    attempts--
   }
 
   draw()
@@ -127,11 +123,12 @@ function placeArrow(){
     cells.push([nx,ny])
   }
 
+  arrowId++
   for(let i=0;i<cells.length;i++){
 
     let [cx,cy]=cells[i]
 
-    arrowId++
+    
 
     board[cy][cx]={
       type: i==cells.length-1 ? "head":"body",
