@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>myhomehomemyhome</title>
+  <link href="https://midomo.neocities.org/style.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&amp;display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<style>
+  #grid{
+    display:grid;
+    grid-template-columns:repeat(6,60px);
+    gap:4px;
+  }
+  .cell{
+    width:60px;
+    height:60px;
+    border:1px solid #aaa;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    cursor:pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="grid"></div>
+
+<script>
+const size = 6
+const arrows = ["↑","↓","←","→"]
+let board = []
+
+function init(){
+  board = []
+  for(let y=0;y<size;y++){
+    board[y]=[]
+    for(let x=0;x<size;x++){
+      board[y][x]=Math.random()<0.6 ?
+        arrows[Math.floor(Math.random()*4)] : null
+    }
+  }
+  draw()
+}
+
+function draw(){
+  const g = document.getElementById("grid")
+  g.innerHTML=""
+
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      const c=document.createElement("div")
+      c.className="cell"
+      c.textContent = board[y][x] ?? ""
+      c.onclick=()=>move(x,y)
+      g.appendChild(c)
+    }
+  }
+}
+
+function move(x,y){
+  let dir = board[y][x]
+  if(!dir) return
+
+  let dx=0,dy=0
+  if(dir=="↑") dy=-1
+  if(dir=="↓") dy=1
+  if(dir=="←") dx=-1
+  if(dir=="→") dx=1
+
+  let nx=x, ny=y
+
+  while(true){
+    nx+=dx
+    ny+=dy
+
+    if(nx<0||ny<0||nx>=size||ny>=size){
+      board[y][x]=null
+      break
+    }
+
+    if(board[ny][nx]!=null){
+      return
+    }
+  }
+
+  draw()
+}
+init()
+</script>
+
+</body>
+</html>
