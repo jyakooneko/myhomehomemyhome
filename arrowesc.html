@@ -63,20 +63,28 @@ function dirFrom(dx,dy){
 
 function init(){
 
-  board=[]
+  let ok=false
 
-  for(let y=0;y<size;y++){
-    board[y]=[]
-    for(let x=0;x<size;x++){
-      board[y][x] = null
+  while(!ok){
+
+    board=[]
+    arrowId=0
+
+    for(let y=0;y<size;y++){
+      board[y]=[]
+      for(let x=0;x<size;x++){
+        board[y][x]=null
+      }
     }
-  }
 
-  let attempts=200
+    let attempts=150
 
-  while(attempts>0){
-    placeArrow()
-    attempts--
+    while(attempts>0){
+      placeArrow()
+      attempts--
+    }
+
+    ok = isSolvable()
   }
 
   draw()
@@ -210,6 +218,73 @@ function move(x,y){
   }
 
   draw()
+}
+
+function isSolvable(){
+
+  let test = JSON.parse(JSON.stringify(board))
+
+  let changed = true
+
+  while(changed){
+
+    changed = false
+
+    for(let y=0;y<size;y++){
+      for(let x=0;x<size;x++){
+
+        let cell = test[y][x]
+        if(!cell || cell.type!="head") continue
+
+        let dx=[0,1,0,-1][cell.dir]
+        let dy=[-1,0,1,0][cell.dir]
+
+        let nx=x
+        let ny=y
+        let ok=true
+
+        while(true){
+
+          nx+=dx
+          ny+=dy
+
+          if(!inside(nx,ny)) break
+
+          if(test[ny][nx]!=null){
+            ok=false
+            break
+          }
+
+        }
+
+        if(ok){
+
+          let id = cell.id
+
+          for(let yy=0;yy<size;yy++){
+            for(let xx=0;xx<size;xx++){
+              if(test[yy][xx] && test[yy][xx].id==id){
+                test[yy][xx]=null
+              }
+            }
+          }
+
+          changed=true
+        }
+
+      }
+    }
+  }
+
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      if(test[y][x] && test[y][x].type=="head"){
+        return false
+      }
+    }
+  }
+
+  return true
 }
 
 init()
