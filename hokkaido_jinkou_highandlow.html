@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北海道人口ハイアンドロー</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --bg: #ecf0f1;
+        }
+        body { 
+            font-family: 'Helvetica Neue', Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #game-container { 
+            background: white; 
+            width: 95%; 
+            max-width: 800px; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            text-align: center; 
+            position: relative;
+        }
+        .hidden { display: none !important; }
+        
+        /* タイトル・リザルト画面 */
+        h1 { color: var(--primary); margin-bottom: 10px; font-size: 1.8rem; }
+        .description { color: #7f8c8d; margin-bottom: 30px; line-height: 1.6; }
+        .btn-main { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 18px 50px; 
+            font-size: 1.2rem; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* プレイ画面 */
+        .status-bar { display: flex; justify-content: space-between; margin-bottom: 20px; color: #7f8c8d; font-weight: bold; }
+        .question-header { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; color: var(--primary); }
+        .battle-field { display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .city-card { flex: 1; display: flex; flex-direction: column; gap: 15px; max-width: 340px; }
+        .vs { font-size: 1.5rem; font-weight: bold; color: #bdc3c7; font-style: italic; }
+        
+        .map-container { 
+            width: 100%; 
+            height: 220px; 
+            background: #f9f9f9; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 1px solid #eee;
+        }
+        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+        
+        .city-btn { 
+            background: white; 
+            border: 2px solid var(--accent); 
+            color: var(--accent); 
+            padding: 15px 10px; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .city-btn:hover { background: var(--accent); color: white; }
+
+        /* 通知（トースト） */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 240px;
+            padding: 15px 25px;
+            margin-top: 10px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.4s ease-out, fadeOut 0.4s ease-in 2.5s forwards;
+            text-align: left;
+        }
+        .toast.correct { background: var(--success); }
+        .toast.wrong { background: var(--danger); }
+        .toast-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 4px; }
+        .toast-body { font-size: 0.85rem; opacity: 0.9; }
+
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* リザルト */
+        .score-display { font-size: 4rem; color: var(--accent); margin: 20px 0; font-weight: bold; }
+        
+        @media (max-width: 600px) {
+            .battle-field { flex-direction: column; }
+            .vs { margin: 10px 0; }
+            .map-container { height: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="screen-title">
+        <h1>北海道<br>人口ハイアンドロー</h1>
+        <p class="description">
+            どちらの市町村の人口が多いか当ててください。<br>
+            人口が近い市町村を当てるほど高スコア<br>
+            全30問
+        </p>
+        <button class="btn-main" onclick="startGame()">ゲームスタート</button>
+    </div>
+
+    <div id="screen-quiz" class="hidden">
+        <div class="status-bar">
+            <div id="current-round">Round: 1/30</div>
+            <div id="current-score">Score: 0</div>
+        </div>
+        <div class="question-header">どちらの人口が多い？</div>
+        <div class="battle-field">
+            <div class="city-card">
+                <div class="map-container" id="map-0"></div>
+                <button class="city-btn" id="name-0" onclick="checkAnswer(0)"></button>
+            </div>
+            <div class="vs">VS</div>
+            <div class="city-card">
+                <div class="map-container" id="map-1"></div>
+                <button class="city-btn" id="name-1" onclick="checkAnswer(1)"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-result" class="hidden">
+        <h1>結果発表</h1>
+        <div class="score-display" id="final-score">0</div>
+        <p id="rank-message"></p>
+        <button class="btn-main" onclick="copyResult()">結果をコピーして共有</button>
+        <br><br>
+        <button style="background:#95a5a6; box-shadow:none;" class="btn-main" onclick="location.reload()">タイトルへ戻る</button>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// 北海道全179市町村データ（ホームメイトより 2026/5/2参照）
+const allCities = [
+    {n:"札幌市",p:1973395},{n:"旭川市",p:329306},{n:"函館市",p:251084},{n:"釧路市",p:165077},{n:"苫小牧市",p:170113},
+    {n:"帯広市",p:166536},{n:"小樽市",p:111299},{n:"北見市",p:115480},{n:"江別市",p:121056},{n:"室蘭市",p:82358},
+    {n:"千歳市",p:97950},{n:"岩見沢市",p:79314},{n:"恵庭市",p:70331},{n:"北広島市",p:58171},{n:"石狩市",p:56869},
+    {n:"登別市",p:46391},{n:"北斗市",p:44302},{n:"音更町",p:43576},{n:"滝川市",p:39490},{n:"網走市",p:35759},
+    {n:"稚内市",p:33563},{n:"伊達市",p:32826},{n:"名寄市",p:27282},{n:"根室市",p:24636},{n:"七飯町",p:27686},
+    {n:"幕別町",p:26610},{n:"美唄市",p:20413},{n:"紋別市",p:21215},{n:"留萌市",p:20114},{n:"富良野市",p:21131},
+    {n:"深川市",p:20039},{n:"士別市",p:17858},{n:"遠軽町",p:19241},{n:"新ひだか町",p:21517},{n:"倶知安町",p:15129},
+    {n:"余市町",p:18000},{n:"芽室町",p:18048},{n:"白老町",p:16212},{n:"八雲町",p:15826},{n:"森町",p:14338},{n:"別海町",p:14380},
+    {n:"木古内町",p:3832},{n:"中標津町",p:23010},{n:"斜里町",p:11418},{n:"長沼町",p:10289},{n:"栗山町",p:11272},{n:"当別町",p:15916},
+    {n:"美幌町",p:18697},{n:"厚岸町",p:8892},{n:"日高町",p:11279},{n:"新得町",p:5817},{n:"清水町",p:9094},{n:"足寄町",p:6563},
+    {n:"弟子屈町",p:6955},{n:"大空町",p:6775},{n:"美瑛町",p:9668},{n:"上富良野町",p:10348},{n:"洞爺湖町",p:8442},{n:"安平町",p:7340},
+    {n:"厚真町",p:4432},{n:"浦河町",p:12073},{n:"えりも町",p:4374},{n:"様似町",p:4043},{n:"広尾町",p:6387},{n:"池田町",p:6294},{n:"本別町",p:6618},
+    {n:"幕別町",p:25766},{n:"湧別町",p:8270},{n:"雄武町",p:4199},{n:"興部町",p:3628},{n:"枝幸町",p:7565},{n:"浜頓別町",p:3448},{n:"利尻富士町",p:2458},
+    {n:"礼文町",p:2509},{n:"羽幌町",p:6548},{n:"小平町",p:2994},{n:"苫前町",p:2936},{n:"増毛町",p:3908},{n:"ニセコ町",p:5074},{n:"真狩村",p:2045},{n:"留寿都村",p:1911},
+    {n:"喜茂別町",p:2156},{n:"京極町",p:2941},{n:"共和町",p:5772},{n:"岩内町",p:11648},{n:"泊村",p:1569},{n:"神恵内村",p:870},{n:"積丹町",p:1831},{n:"古平町",p:2745},
+    {n:"仁木町",p:3180},{n:"赤井川村",p:1165},{n:"南幌町",p:7319},{n:"奈井江町",p:5120},{n:"上砂川町",p:2841},{n:"由仁町",p:4822},{n:"月形町",p:3691},{n:"浦臼町",p:1732},
+    {n:"新十津川町",p:6484},{n:"雨竜町",p:2389},{n:"北竜町",p:1724},{n:"沼田町",p:2909},{n:"秩父別町",p:2329},{n:"妹背牛町",p:2693},{n:"東神楽町",p:10127},{n:"東川町",p:8314},
+    {n:"鷹栖町",p:6567},{n:"当麻町",p:6319},{n:"比布町",p:3520},{n:"愛別町",p:2605},{n:"上川町",p:3500},{n:"美深町",p:4145},{n:"音威子府村",p:706},{n:"中川町",p:1528},
+    {n:"幌加内町",p:1370},{n:"和寒町",p:3213},{n:"剣淵町",p:2926},{n:"下川町",p:3126},{n:"中富良野町",p:4733},{n:"南富良野町",p:2376},{n:"占冠村",p:1306},
+    {n:"和寒町",p:3192},{n:"夕張市",p:7334},{n:"歌志内市",p:2989},{n:"赤平市",p:9698},{n:"芦別市",p:12555},{n:"砂川市",p:16486},{n:"三笠市",p:8040},
+    {n:"鹿部町",p:3760},{n:"知内町",p:4167},{n:"福島町",p:3794},{n:"松前町",p:6260},{n:"上ノ国町",p:4306},{n:"厚沢部町",p:3592},{n:"乙部町",p:3403},
+    {n:"せたな町",p:7398},{n:"今金町",p:5072},{n:"黒松内町",p:2791},{n:"蘭越町",p:4568},{n:"島牧村",p:1356},{n:"寿都町",p:2838},
+    {n:"奥尻町",p:2410},{n:"長万部町",p:5109},{n:"むかわ町",p:7651},{n:"厚真町",p:4414},{n:"由仁町",p:4850},{n:"平取町",p:4776},{n:"新冠町",p:5309},
+    {n:"浦河町",p:12074},{n:"様似町",p:4043},{n:"幌延町",p:2371},{n:"豊富町",p:3974},{n:"利尻町",p:2004},{n:"猿払村",p:2611},{n:"中頓別町",p:1637},
+    {n:"清里町",p:3883},{n:"小清水町",p:4623},{n:"訓子府町",p:4677},{n:"置戸町",p:2775},{n:"佐呂間町",p:4875},{n:"滝上町",p:2421},{n:"西興部村",p:1053},
+    {n:"津別町",p:4373},{n:"陸別町",p:2264},{n:"豊頃町",p:3022},{n:"浦幌町",p:4387},{n:"大樹町",p:5420},{n:"広尾町",p:6381},{n:"更別村",p:3080},
+    {n:"中札内村",p:3884},{n:"士幌町",p:5848},{n:"上士幌町",p:4778},{n:"鹿追町",p:5266},{n:"鶴居村",p:2558},{n:"標茶町",p:7230},{n:"弟子屈町",p:7041},
+    {n:"標津町",p:4373},{n:"羅臼町",p:4722},{n:"釧路町",p:19105},{n:"江差町",p:7428},{n:"白糠町",p:7289},{n:"浜中町",p:5507},{n:"豊浦町",p:3821},
+    {n:"新篠津村",p:3044},{n:"天塩町",p:2950},{n:"壮瞥町",p:2743},{n:"遠別町",p:2520},{n:"初山別村",p:1080}
+];
+
+let usedIndices = new Set();
+let currentOptions = [];
+let score = 0;
+let round = 1;
+const MAX_ROUND = 30;
+
+function startGame() {
+    score = 0;
+    round = 1;
+    usedIndices.clear();
+    document.getElementById('screen-title').classList.add('hidden');
+    document.getElementById('screen-result').classList.add('hidden');
+    document.getElementById('screen-quiz').classList.remove('hidden');
+    nextQuestion();
+}
+
+function nextQuestion() {
+    if (round > MAX_ROUND) {
+        endGame();
+        return;
+    }
+
+    document.getElementById('current-round').innerText = `Round: ${round}/${MAX_ROUND}`;
+    document.getElementById('current-score').innerText = `Score: ${score}`;
+
+    // 未使用の市町村からランダムに2つ選出
+    let available = [];
+    for(let i=0; i<allCities.length; i++){
+        if(!usedIndices.has(i)) available.push(i);
+    }
+
+    if (available.length < 2) {
+        endGame();
+        return;
+    }
+
+    const idx1 = available.splice(Math.floor(Math.random() * available.length), 1)[0];
+    const idx2 = available.splice(Math.floor(Math.random() * available.length), 1)[0];
+    
+    usedIndices.add(idx1);
+    usedIndices.add(idx2);
+    
+    currentOptions = [allCities[idx1], allCities[idx2]];
+
+    updateCityUI(0, currentOptions[0]);
+    updateCityUI(1, currentOptions[1]);
+}
+
+function updateCityUI(index, city) {
+    document.getElementById(`name-${index}`).innerText = city.n;
+    const mapDiv = document.getElementById(`map-${index}`);
+    // Google Maps Embed (名称検索)
+    mapDiv.innerHTML = `<iframe src="https://maps.google.co.jp/maps?output=embed&q=北海道${city.n}+役場&z=10&t=m"></iframe>`;
+}
+
+function showToast(isCorrect, points, selected, other) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${isCorrect ? 'correct' : 'wrong'}`;
+    
+    const titleText = isCorrect ? `正解！ +${points}点` : "不正解...";
+    const bodyText = `${selected.n}: ${selected.p.toLocaleString()}人<br>${other.n}: ${other.p.toLocaleString()}人`;
+    
+    toast.innerHTML = `<div class="toast-title">${titleText}</div><div class="toast-body">${bodyText}</div>`;
+    
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 3000);
+}
+
+function checkAnswer(selectedIndex) {
+    const otherIndex = selectedIndex === 0 ? 1 : 0;
+    const selected = currentOptions[selectedIndex];
+    const other = currentOptions[otherIndex];
+    let isCorrect = false;
+    let points = 0;
+
+    if (selected.p >= other.p) {
+        isCorrect = true;
+
+        const ratio = Math.min(selected.p, other.p) / Math.max(selected.p, other.p);
+        points = Math.round(100 + (ratio * 400));
+        score += points;
+    }
+
+    showToast(isCorrect, points, selected, other);
+
+    
+    round++;
+    setTimeout(nextQuestion, 400);
+}
+
+function endGame() {
+    document.getElementById('screen-quiz').classList.add('hidden');
+    document.getElementById('screen-result').classList.remove('hidden');
+    document.getElementById('final-score').innerText = score.toLocaleString() + " pts";
+    
+    let msg = "北海道博士";
+    if(score < 3000) msg = "北海道未履修";
+    else if(score < 6000) msg = "北海道修士";
+    document.getElementById('rank-message').innerText = msg;
+}
+
+function copyResult() {
+    const text = `北海道人口ハイアンドローで ${score} 点稼ぎました！\n#北海道人口ハイアンドロー ${window.location.href}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => alert("コピーしました！"));
+    } else {
+        alert("お使いのブラウザではコピー機能がサポートされていません。");
+    }
+}
+</script>
+
+</body>
+</html>
